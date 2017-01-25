@@ -17,7 +17,7 @@ class ControlSurfaces(altimeter: ActorRef) extends Actor {
     // amount and we inform the Altimeter that we're climbing
     case StickBack(amount) =>
       altimeter ! RateChange(amount)
-    // Nemo pushes the stick forward and we 
+    // Nemo pushes the stick forward and we
     // inform the Altimeter that we're descending
     case StickForward(amount) =>
       altimeter ! RateChange(-1 * amount)

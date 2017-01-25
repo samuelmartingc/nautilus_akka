@@ -7,10 +7,13 @@ package machines
 import akka.actor.{Props, Actor, ActorSystem, ActorLogging}
 import scala.concurrent.duration._
 object Altimeter {
+  type Receive = PartialFunction[Any, Unit]
   case class RateChange(amount: Float)
+  // Sent by the Altimeter at regular intervals
+  case class AltitudeUpdate(altitude: Double)
 }
 
-class Altimeter extends Actor with ActorLogging {
+class Altimeter extends Actor with ActorLogging with EventSource {
   import Altimeter._
   implicit val ec = context.dispatcher
   val ceiling = -3000
@@ -24,7 +27,9 @@ class Altimeter extends Actor with ActorLogging {
   val ticker = context.system.scheduler.schedule(
     100.millis, 100.millis, self, Tick)
   case object Tick
-  def receive = {
+
+  def receive = eventSourceReceive orElse altimeterReceive
+  def altimeterReceive :Receive = {
     case RateChange(amount) =>
       // Truncate the range of 'amount' to [-1, 1] before multiplying
       rateOfClimb = amount.min(1.0f).max(-1.0f) * maxRateOfClimb
@@ -35,6 +40,7 @@ class Altimeter extends Actor with ActorLogging {
       altitude = altitude + ((tick - lastTick) / 60000.0) *
         rateOfClimb
       lastTick = tick
+      sendEvent(AltitudeUpdate(altitude))
   }
   // Kill our ticker when we stop
   override def postStop(): Unit = ticker.cancel

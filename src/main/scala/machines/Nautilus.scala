@@ -9,19 +9,19 @@ object Nautilus {
 }
 
 class Nautilus extends Actor with ActorLogging {
-  import Altimeter._
+  import Barometer._
   import Nautilus._
   import EventSource._
   override def preStart() {
-    altimeter ! RegisterListener(self)
+    barometer ! RegisterListener(self)
   }
-  val altimeter = context.actorOf(
-    Props[Altimeter], "Altimeter")
+  val barometer = context.actorOf(
+    Props[Barometer], "Barometer")
   val controls = context.actorOf(
-    Props(new ControlSurfaces(altimeter)), "ControlSurfaces")
+    Props(new ControlSurfaces(barometer)), "ControlSurfaces")
   def receive = {
-    case AltitudeUpdate(altitude) =>
-      log info(s"Altitude is now: $altitude")
+    case DepthUpdate(barometer) =>
+      log info(s"Depth is now: $barometer")
     case GiveMeControl =>
       log info("Nautilus giving control.")
       sender ! controls

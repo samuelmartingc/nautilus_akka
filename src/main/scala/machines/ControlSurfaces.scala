@@ -9,17 +9,17 @@ object ControlSurfaces {
   case class StickForward(amount: Float)
 }
 
-class ControlSurfaces(altimeter: ActorRef) extends Actor {
+class ControlSurfaces(barometer: ActorRef) extends Actor {
   import ControlSurfaces._
-  import Altimeter._
+  import Barometer._
   def receive = {
     // Nemo pulled the stick back by a certain
-    // amount and we inform the Altimeter that we're climbing
+    // amount and we inform the Depth that we're climbing
     case StickBack(amount) =>
-      altimeter ! RateChange(amount)
+      barometer ! RateChange(amount)
     // Nemo pushes the stick forward and we
-    // inform the Altimeter that we're descending
+    // inform the Depth that we're descending
     case StickForward(amount) =>
-      altimeter ! RateChange(-1 * amount)
+      barometer ! RateChange(-1 * amount)
   }
 }
